@@ -1,0 +1,11 @@
+{
+   double_free_test_ignore
+   Memcheck:Addr8
+   fun:mmem_free
+   fun:free_test3_double_free
+   fun:run_single_test
+   fun:run_single_suite
+   fun:CU_run_all_tests
+   fun:CU_CI_main
+   fun:main
+}
