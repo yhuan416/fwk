@@ -4,6 +4,10 @@ project(frameworks C)
 
 option(BUILD_TEST "Build Tests" OFF)
 
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(CMAKE_DEBUG_POSTFIX ".debug")
+endif()
+
 # build tests
 if(BUILD_TEST)
     enable_testing()
