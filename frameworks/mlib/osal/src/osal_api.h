@@ -535,6 +535,20 @@ typedef uint64_t (*osal_api_uptime)(void);
  */
 typedef uint32_t (*osal_api_random)(void);
 
+/**
+ * @brief get current process name
+ * 
+ * @retval pid
+ */
+typedef int32_t (*osal_api_getpid)(void);
+
+/**
+ * @brief get current thread name
+ * 
+ * @retval tid
+ */
+typedef long (*osal_api_gettid)(void);
+
 typedef struct osal_api
 {
     // mem
@@ -593,6 +607,8 @@ typedef struct osal_api
     osal_api_uptime uptime;
     osal_api_get_version get_version;
     osal_api_random random;
+    osal_api_getpid getpid;
+    osal_api_gettid gettid;
 } osal_api_t;
 
 extern osal_api_t osal_api;
@@ -671,5 +687,13 @@ extern osal_api_t osal_api;
 #ifndef osal_reboot
 #define osal_reboot osal_api.reboot
 #endif // !osal_reboot
+
+#ifndef osal_getpid
+#define osal_getpid osal_api.getpid
+#endif // !osal_getpid
+
+#ifndef osal_gettid
+#define osal_gettid osal_api.gettid
+#endif // !osal_gettid
 
 #endif // !_OSAL_API_H_

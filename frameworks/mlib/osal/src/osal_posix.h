@@ -7,7 +7,10 @@
 #include <stdint.h>
 #include <unistd.h>
 
+#include <sys/types.h>
 #include <sys/time.h>
+
+#include <sys/syscall.h>
 
 #include <pthread.h>
 
@@ -34,5 +37,15 @@
 #define osal_task_get_priority(task, pri)
 #define osal_task_set_priority(task, pri)
 #endif // !osal_task_create
+
+// pid
+#ifndef osal_getpid
+#define osal_getpid() getpid()
+#endif
+
+// tid
+#ifndef osal_gettid
+#define osal_gettid() syscall(SYS_gettid)
+#endif
 
 #endif
