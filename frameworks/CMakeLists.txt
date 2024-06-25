@@ -2,6 +2,8 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
 
 project(frameworks C)
 
+include(GNUInstallDirs)
+
 option(BUILD_TEST "Build Tests" OFF)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
