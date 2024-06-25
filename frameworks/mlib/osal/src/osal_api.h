@@ -31,7 +31,7 @@ enum osal_api_ret
     OSAL_API_RET_MAX,
 };
 
-#define OSAL_API_WAITFOREVER (-1)
+#define OSAL_WAITFOREVER (-1)
 
 //////////////////////////////////////////////// mem
 

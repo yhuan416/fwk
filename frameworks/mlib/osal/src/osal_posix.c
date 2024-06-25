@@ -394,7 +394,7 @@ int osal_posix_sem_wait(osal_sem_t sem, uint32_t timeout_ms)
     {
         ret = sem_trywait((sem_t *)sem);
     }
-    else if (timeout_ms == OSAL_API_WAITFOREVER)
+    else if (timeout_ms == OSAL_WAITFOREVER)
     {
         ret = sem_wait((sem_t *)sem);
     }
@@ -732,7 +732,7 @@ int osal_posix_mq_recv(osal_mq_t mq, void *msg, int msg_size, int timeout_ms)
             break;
         }
 
-        if (timeout_ms == OSAL_API_WAITFOREVER)
+        if (timeout_ms == OSAL_WAITFOREVER)
         {
             ret = pthread_cond_wait(&mq_posix->cond, &mq_posix->r_mutex);
         }

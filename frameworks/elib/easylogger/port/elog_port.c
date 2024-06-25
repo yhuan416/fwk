@@ -64,7 +64,7 @@ void elog_port_output(const char *log, size_t size) {
  * output lock
  */
 void elog_port_output_lock(void) {
-    osal_mutex_lock(elog_mutex, OSAL_API_WAITFOREVER);
+    osal_mutex_lock(elog_mutex, OSAL_WAITFOREVER);
 }
 
 /**

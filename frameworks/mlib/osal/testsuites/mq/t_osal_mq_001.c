@@ -28,7 +28,7 @@ void *routine2(void *arg)
     msg_t msg;
     osal_mq_t mq = (osal_mq_t)arg;
 
-    CU_ASSERT_NOT_EQUAL(osal_mq_recv(mq, &msg, sizeof(msg_t), OSAL_API_WAITFOREVER), OSAL_API_OK);
+    CU_ASSERT_NOT_EQUAL(osal_mq_recv(mq, &msg, sizeof(msg_t), OSAL_WAITFOREVER), OSAL_API_OK);
 
     return NULL;
 }

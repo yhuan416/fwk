@@ -71,4 +71,10 @@
 #define osal_random() esp_random()
 #endif // !osal_random
 
+#ifndef osal_getpid
+#define osal_getpid() ""
+#endif
+
+
+
 #endif // !_OSAL_FREERTOS_H_
