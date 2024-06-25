@@ -6,6 +6,8 @@ set(netx_VERSION 0.1.0)
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 option(BUILD_STATIC_LIBS "Build static libraries" ON)
 
+option(BUILD_EXAMPLES "Build examples code" OFF)
+
 if(BUILD_SHARED_LIBS)
     add_library(netx SHARED
         netx.c
@@ -34,4 +36,8 @@ if(BUILD_STATIC_LIBS)
 
     set_target_properties(netx-static PROPERTIES
             OUTPUT_NAME netx)
+endif()
+
+if(BUILD_EXAMPLES)
+    add_subdirectory(examples)
 endif()
