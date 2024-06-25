@@ -28,9 +28,16 @@ if(BUILD_SHARED_LIBS)
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/port>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/EasyLogger/easylogger/inc>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/EasyLogger/easylogger/plugins/file>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     )
 
     target_link_libraries(easylogger PRIVATE pthread osal)
+
+    install(TARGETS easylogger EXPORT easylogger-targets
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    )
 endif()
 
 if(BUILD_STATIC_LIBS)
@@ -44,11 +51,27 @@ if(BUILD_STATIC_LIBS)
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/port>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/EasyLogger/easylogger/inc>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/EasyLogger/easylogger/plugins/file>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     )
 
     target_link_libraries(easylogger-static PRIVATE pthread osal)
 
+    target_compile_options(easylogger-static PRIVATE -fPIC)
+
     set_target_properties(easylogger-static PROPERTIES
         OUTPUT_NAME easylogger)
+
+    install(TARGETS easylogger-static EXPORT easylogger-targets
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    )
 endif()
 
+install(EXPORT easylogger-targets
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/easylogger
+    NAMESPACE easylogger::
+)
+
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/EasyLogger/easylogger/inc/elog.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/port/elog_cfg.h
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
