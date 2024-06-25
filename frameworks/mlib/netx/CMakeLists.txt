@@ -52,7 +52,7 @@ endif()
 
 install(EXPORT netx-targets
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/netx
-    NAMESPACE nanopb::
+    NAMESPACE netx::
 )
 
 install(FILES netx.h
