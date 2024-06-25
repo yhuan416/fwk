@@ -5,7 +5,7 @@ project(mlist C)
 add_library(mlist INTERFACE)
 
 target_include_directories(mlist INTERFACE 
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/mlist>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 
@@ -19,5 +19,5 @@ install(EXPORT mlist-targets
 )
 
 install(FILES mlist.h
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/mlist
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )

@@ -26,3 +26,12 @@ make
 cd framework
 ctest
 ```
+
+## Build & Install
+
+``` sh
+mkdir -p build && cd build
+cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=../platforms/linux-x64 ..
+make
+make install
+```

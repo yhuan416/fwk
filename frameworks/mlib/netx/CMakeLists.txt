@@ -17,7 +17,7 @@ if(BUILD_SHARED_LIBS)
         SOVERSION ${netx_VERSION})
     
     target_include_directories(netx INTERFACE
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/netx>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     )
 
@@ -36,7 +36,7 @@ if(BUILD_STATIC_LIBS)
         netx.h)
 
     target_include_directories(netx-static INTERFACE
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/netx>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     )
 
@@ -56,7 +56,7 @@ install(EXPORT netx-targets
 )
 
 install(FILES netx.h
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/netx
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
 if(BUILD_EXAMPLES)
