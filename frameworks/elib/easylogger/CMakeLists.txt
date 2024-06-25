@@ -24,7 +24,7 @@ if(BUILD_SHARED_LIBS)
     set_target_properties(easylogger PROPERTIES
         SOVERSION ${easylogger_VERSION})
     
-    target_include_directories(easylogger INTERFACE
+    target_include_directories(easylogger PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/port>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/EasyLogger/easylogger/inc>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/EasyLogger/easylogger/plugins/file>

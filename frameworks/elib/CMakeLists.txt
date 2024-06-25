@@ -1,5 +1,7 @@
 
+set(nanopb_BUILD_GENERATOR OFF)
 add_subdirectory(nanopb)
+
 add_subdirectory(quirc)
 add_subdirectory(easylogger)
 
