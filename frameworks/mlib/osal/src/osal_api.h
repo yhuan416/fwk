@@ -14,9 +14,7 @@
 
 #if defined(__linux__)
 #include "osal_posix.h"
-#endif
-
-#if defined(ESP_PLATFORM)
+#elif defined(ESP_PLATFORM)
 #include "osal_freertos.h"
 #endif
 
