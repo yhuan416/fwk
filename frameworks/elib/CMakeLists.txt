@@ -5,6 +5,8 @@ add_subdirectory(nanopb)
 add_subdirectory(quirc)
 add_subdirectory(easylogger)
 
+add_subdirectory(flashdb)
+
 if(BUILD_EXAMPLES)
     add_subdirectory(nanopb/examples/cmake_simple)
 endif()
