@@ -1,6 +1,12 @@
 # fwk
 framework
 
+## Download
+
+``` sh
+git clone --recursive git@github.com:yhuan416/fwk.git
+```
+
 ## Build
 
 ``` sh

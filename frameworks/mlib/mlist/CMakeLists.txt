@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.2)
 
+if (ESP_PLATFORM)
+idf_component_register(INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR})
+else ()
+
 project(mlist C)
 
 add_library(mlist INTERFACE)
@@ -21,3 +25,5 @@ install(EXPORT mlist-targets
 install(FILES mlist.h
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
+
+endif ()
