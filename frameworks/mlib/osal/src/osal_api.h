@@ -14,7 +14,9 @@
 
 #if defined(__linux__)
 #include "osal_posix.h"
-#elif defined(ESP_PLATFORM)
+#endif
+
+#if defined(ESP_PLATFORM)
 #include "osal_freertos.h"
 #endif
 
@@ -87,10 +89,15 @@ typedef void *(*osal_task_func_t)(void *arg);
 
 typedef struct osal_task_attr_t
 {
-    const char *name;
-    uint32_t stack_size;
+    const char *name;    /** < task name, can be NULL. */
+    uint32_t stack_size; /** < stack size */
+    uint32_t priority;   /** < task priority */
+
+    // static stack option
     void *stack_start;
-    uint32_t priority;
+    uint32_t task_cb_size;
+    void *task_cb_start;
+
     uint32_t affinity_mask;
     uint32_t reserved;
 } osal_task_attr_t;
@@ -143,6 +150,17 @@ typedef int (*osal_api_task_destroy)(osal_task_t task);
  * @retval 任务句柄
  */
 typedef osal_task_t (*osal_api_task_self)(void);
+
+/**
+ * @brief 获取指定任务名
+ * 
+ * @name osal_task_get_name
+ * 
+ * @param[in] task 任务句柄, 为NULL时返回当前任务名
+ * 
+ * @retval 任务名
+ */
+typedef const char *(*osal_api_task_get_name)(osal_task_t task);
 
 /**
  * @brief 任务调度, 一般用于rtos
@@ -535,20 +553,6 @@ typedef uint64_t (*osal_api_uptime)(void);
  */
 typedef uint32_t (*osal_api_random)(void);
 
-/**
- * @brief get current process name
- * 
- * @retval pid
- */
-typedef int32_t (*osal_api_getpid)(void);
-
-/**
- * @brief get current thread name
- * 
- * @retval tid
- */
-typedef long (*osal_api_gettid)(void);
-
 typedef struct osal_api
 {
     // mem
@@ -561,6 +565,7 @@ typedef struct osal_api
     osal_api_task_create task_create;
     osal_api_task_join task_join;
     osal_api_task_destroy task_destroy;
+    osal_api_task_get_name task_get_name;
     osal_api_task_self task_self;
     osal_api_task_yield task_yield;
     osal_api_task_sleep task_sleep;
@@ -607,8 +612,6 @@ typedef struct osal_api
     osal_api_uptime uptime;
     osal_api_get_version get_version;
     osal_api_random random;
-    osal_api_getpid getpid;
-    osal_api_gettid gettid;
 } osal_api_t;
 
 extern osal_api_t osal_api;
@@ -623,6 +626,7 @@ extern osal_api_t osal_api;
 #ifndef osal_task_create
 #define osal_task_create osal_api.task_create
 #define osal_task_join osal_api.task_join
+#define osal_task_get_name osal_api.task_get_name
 #define osal_task_self osal_api.task_self
 #define osal_task_sleep osal_api.task_sleep
 #define osal_task_usleep osal_api.task_usleep

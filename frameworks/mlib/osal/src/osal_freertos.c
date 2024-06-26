@@ -67,20 +67,71 @@ static void osal_freertos_task_wrapper(void *arg)
     vTaskDelete(NULL);
 }
 
-osal_task_t osal_freertos_task_create(const char *name,
-                                      osal_task_func_t func,
+#define OSAL_DEFAULT_PRIORITY ((UBaseType_t)15)
+#define OSAL_DEFAULT_STACK_NAME "osal_task"
+#define OSAL_DEFAULT_STACK_SIZE (configMINIMAL_STACK_SIZE)
+
+osal_task_t osal_freertos_task_create(osal_task_func_t func,
                                       void *arg,
-                                      void *stack_start,
-                                      unsigned int stack_size,
-                                      unsigned int priority)
+                                      const osal_task_attr_t *attr)
 {
+    BaseType_t ret;
     TaskHandle_t task_handle = NULL;
     struct task_wrapper_t *task_wrapper = NULL;
+    uint32_t ulStackDepth = OSAL_DEFAULT_STACK_SIZE;
+    UBaseType_t uxPriority = OSAL_DEFAULT_PRIORITY;
+    const char *pcName = OSAL_DEFAULT_STACK_NAME;
+    UBaseType_t core_aff = tskNO_AFFINITY;
 
-    if (stack_size <= 0 || priority >= configMAX_PRIORITIES || func == NULL || name == NULL)
+    if (func == NULL)
     {
         ESP_LOGE(TAG, "osal_freertos_task_create: invalid parameters");
         return NULL;
+    }
+
+#if (configSUPPORT_STATIC_ALLOCATION == 1)
+    StackType_t *pxStackBuffer = NULL;
+    StaticTask_t *pxTaskBuffer = NULL;
+#endif
+
+    if (attr != NULL)
+    {
+        if (attr->stack_size > configMINIMAL_STACK_SIZE)
+        {
+            ulStackDepth = attr->stack_size;
+        }
+
+        if (attr->priority >= configMAX_PRIORITIES)
+        {
+            ESP_LOGE(TAG, "osal_freertos_task_create: invalid priority");
+            return NULL;
+        }
+        uxPriority = (UBaseType_t)attr->priority;
+
+        if (attr->name != NULL)
+        {
+            pcName = attr->name;
+        }
+
+        if (attr->affinity_mask != 0)
+        {
+            core_aff = (UBaseType_t)attr->affinity_mask;
+        }
+
+#if (configSUPPORT_STATIC_ALLOCATION == 1)
+        if ((attr->stack_start != NULL) &&
+            (attr->task_cb_start != NULL) && (attr->task_cb_size >= sizeof(StaticTask_t)))
+        {
+            // stack size too small
+            if (attr->stack_size < configMINIMAL_STACK_SIZE) {
+                ESP_LOGE(TAG, "osal_freertos_task_create: invalid stack size");
+                return NULL;
+            }
+
+            pxStackBuffer = attr->stack_start;
+            pxTaskBuffer = attr->task_cb_start;
+        }
+#endif
     }
 
     task_wrapper = osal_malloc(sizeof(struct task_wrapper_t));
@@ -93,7 +144,36 @@ osal_task_t osal_freertos_task_create(const char *name,
     task_wrapper->func = func;
     task_wrapper->arg = arg;
 
-    BaseType_t ret = xTaskCreate(osal_freertos_task_wrapper, name, stack_size, (void *)task_wrapper, priority, &task_handle);
+#if (configSUPPORT_STATIC_ALLOCATION == 1)
+    if (pxStackBuffer != NULL && pxTaskBuffer != NULL)
+    {
+
+#if ((configNUM_CORES > 1) && (configUSE_CORE_AFFINITY == 1))
+        // freertos 增加的 xTaskCreateStaticAffinitySet 函数
+        task_handle = xTaskCreateStaticAffinitySet(osal_freertos_task_wrapper, pcName, ulStackDepth, (void *)task_wrapper, uxPriority, pxStackBuffer, pxTaskBuffer, core_aff);
+#else
+        // esp-idf 原生的 xTaskCreateStaticPinnedToCore 函数
+        task_handle = xTaskCreateStaticPinnedToCore(osal_freertos_task_wrapper, pcName, ulStackDepth, (void *)task_wrapper, uxPriority, pxStackBuffer, pxTaskBuffer, core_aff);
+#endif
+
+        if (task_handle == NULL)
+        {
+            ESP_LOGE(TAG, "osal_freertos_task_create: xTaskCreateStatic failed");
+            osal_free(task_wrapper);
+            return NULL;
+        }
+
+        return task_handle;
+    }
+#endif
+
+#if ((configNUM_CORES > 1) && (configUSE_CORE_AFFINITY == 1))
+    // freertos 增加的 xTaskCreateAffinitySet 函数
+    ret = xTaskCreateAffinitySet(osal_freertos_task_wrapper, pcName, ulStackDepth, (void *)task_wrapper, uxPriority, core_aff, &task_handle);
+#else
+    // esp-idf 原生的 xTaskCreatePinnedToCore 函数
+    ret = xTaskCreatePinnedToCore(osal_freertos_task_wrapper, pcName, ulStackDepth, (void *)task_wrapper, uxPriority, &task_handle, core_aff);
+#endif
     if (ret != pdPASS)
     {
         ESP_LOGE(TAG, "osal_freertos_task_create: xTaskCreate failed");
@@ -104,42 +184,10 @@ osal_task_t osal_freertos_task_create(const char *name,
     return task_handle;
 }
 
-osal_task_t osal_freertos_task_create_pin_to_core(const char *name,
-                                                  osal_task_func_t func,
-                                                  void *arg,
-                                                  void *stack_start,
-                                                  unsigned int stack_size,
-                                                  unsigned int priority,
-                                                  int core_id)
+int osal_freertos_task_join(osal_task_t task)
 {
-    TaskHandle_t task_handle = NULL;
-    struct task_wrapper_t *task_wrapper = NULL;
-
-    if (stack_size <= 0 || priority >= configMAX_PRIORITIES || func == NULL || name == NULL)
-    {
-        ESP_LOGE(TAG, "osal_freertos_task_create_pin_to_core: invalid parameters");
-        return NULL;
-    }
-
-    task_wrapper = osal_malloc(sizeof(struct task_wrapper_t));
-    if (task_wrapper == NULL)
-    {
-        ESP_LOGE(TAG, "osal_freertos_task_create: malloc failed");
-        return NULL;
-    }
-
-    task_wrapper->func = func;
-    task_wrapper->arg = arg;
-
-    BaseType_t ret = xTaskCreatePinnedToCore(osal_freertos_task_wrapper, name, stack_size, (void *)task_wrapper, priority, &task_handle, core_id);
-    if (ret != pdPASS)
-    {
-        ESP_LOGE(TAG, "osal_freertos_task_create_pin_to_core: xTaskCreatePinnedToCore failed");
-        osal_free(task_wrapper);
-        return NULL;
-    }
-
-    return task_handle;
+    ESP_LOGE(TAG, "osal_freertos_task_join: unsupported");
+    return OSAL_API_FAIL;
 }
 
 void osal_freertos_reboot(void)
@@ -155,7 +203,7 @@ osal_api_t osal_api = {
     .realloc = osal_freertos_realloc,
 
     .task_create = osal_freertos_task_create,
-    .task_create_pin_to_core = osal_freertos_task_create_pin_to_core,
+    .task_join = osal_freertos_task_join,
 
     .reboot = osal_freertos_reboot,
 };
