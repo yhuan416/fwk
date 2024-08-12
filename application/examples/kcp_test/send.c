@@ -1,5 +1,7 @@
 #include "ikcp.h"
 #include "common.h"
+
+#define LOG_TAG "send"
 #include "elog.h"
 
 static int sockfd;
@@ -65,6 +67,11 @@ int udp_output(const char *buf, int len, ikcpcb *kcp, void *user)
     return 0;
 }
 
+void _writelog(const char *log, struct IKCPCB *kcp, void *user)
+{
+    log_a("(%p) %s", kcp, log);
+}
+
 int main(int argc, char const *argv[])
 {
     char buffer[BUFFER_SIZE];
@@ -84,6 +91,7 @@ int main(int argc, char const *argv[])
     }
 
     elog_init();
+    elog_set_fmt(ELOG_LVL_ASSERT, ELOG_FMT_ALL);
     elog_start();
 
     sockfd = udp_init(CLIENT_PORT);
@@ -103,6 +111,9 @@ int main(int argc, char const *argv[])
     ikcp_setoutput(kcp, udp_output);
     ret = ikcp_setmtu(kcp, 50);
     log_a("ikcp_setmtu: %d\n", ret);
+
+    kcp->logmask = 0xffffffff;
+    kcp->writelog = _writelog;
 
     i = 0;
 
