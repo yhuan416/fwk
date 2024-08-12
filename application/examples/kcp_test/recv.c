@@ -1,5 +1,6 @@
 #include "ikcp.h"
 #include "common.h"
+#include "elog.h"
 
 static int sockfd;
 static struct sockaddr_in client_addr;
@@ -53,9 +54,10 @@ int udp_output(const char *buf, int len, ikcpcb *kcp, void *user)
 {
     ssize_t send_size;
 
+    elog_hexdump("udp_output", 16, buf, len);
+
     // 回显消息
     send_size = sendto(sockfd, buf, len, 0, (struct sockaddr *)&client_addr, client_addr_len);
-    // printf("udp_output(%ld).\r\n", send_size);
 
     return 0;
 }
@@ -65,9 +67,13 @@ int main(int argc, char const *argv[])
     char buffer[BUFFER_SIZE];
     ssize_t recv_size;
     int i;
+    int ret;
 
     char message[BUFFER_SIZE];
     int len;
+
+    elog_init();
+    elog_start();
 
     sockfd = udp_init(SERVER_PORT);
     if (sockfd < 0)
@@ -78,6 +84,8 @@ int main(int argc, char const *argv[])
 
     ikcpcb *kcp = ikcp_create(CONV, NULL);
     ikcp_setoutput(kcp, udp_output);
+    ret = ikcp_setmtu(kcp, 50);
+    log_a("ikcp_setmtu: %d\n", ret);
 
     while (1)
     {
@@ -102,7 +110,9 @@ int main(int argc, char const *argv[])
             message[len] = '\0'; // 确保字符串终止
 
             // 处理收到的消息
-            printf("Received: %s\n", message);
+            // log_a("Received: %s\n", message);
+
+            // elog_hexdump("message", 16, message, len);
 
             // 发送消息
             ikcp_send(kcp, message, len);
